@@ -1,0 +1,14 @@
+﻿{
+  "name": "zhishu-knowledge-ai-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "知枢 AI 知识库平台 - 本地直运行版",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
+

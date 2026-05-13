@@ -1,0 +1,9 @@
+﻿.env
+data/db.json
+data/uploads/
+data/knowledge-bases/
+data/logs/
+data/debug-*.json
+data/debug-*.txt
+node_modules/
+*.zip

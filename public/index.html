@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>知枢 AI 知识库平台</title>
+  <link rel="stylesheet" href="/styles.css?v=20260513-maintain" />
+</head>
+<body>
+  <!-- MODULE: Auth Gate -->
+  <section id="authGate" class="auth-gate">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="auth-avatar" data-auth-preview></div>
+        <div><h1>登录知枢知识库</h1></div>
+      </div>
+      <div class="auth-switch">
+        <button type="button" class="active" data-auth-mode="login">登录</button>
+        <button type="button" data-auth-mode="register">注册</button>
+      </div>
+      <form id="authLoginForm" class="form auth-form" data-auth-panel="login">
+        <label>用户名<input name="username" autocomplete="username" required /></label>
+        <label>密码<input name="password" type="password" autocomplete="current-password" required /></label>
+        <button type="submit">登录</button>
+      </form>
+      <form id="authRegisterForm" class="form auth-form hidden" data-auth-panel="register">
+        <label>用户名<input name="username" autocomplete="username" required /></label>
+        <label>密码<input name="password" type="password" autocomplete="new-password" required /></label>
+        <label>二次确认密码<input name="passwordConfirm" type="password" autocomplete="new-password" required /></label>
+        <label>账号类型<select name="role"><option value="user">用户</option><option value="admin">管理员</option></select></label>
+        <label class="hidden" id="adminKeyWrap">管理员密钥<input name="adminKey" placeholder="注册管理员需输入密钥" /></label>
+        <div><strong>选择头像</strong><div id="authAvatarGrid" class="avatar-grid"></div></div>
+        <button type="submit">注册并登录</button>
+      </form>
+      <div id="authMessage" class="auth-message"></div>
+    </div>
+  </section>
+
+  <!-- MODULE: App Shell -->
+  <main id="appShell" class="app-shell auth-locked">
+    <header class="topbar">
+      <div class="brand-block">
+        <div class="wolf-mark" data-avatar-slot="brandAvatarId" aria-label="像素动物头像"></div>
+        <div>
+          
+          <h1>知枢 AI 知识库平台</h1>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button type="button" class="user-pill" id="userPill" data-tab="user">用户中心</button>
+        <div class="status" id="status">连接中...</div>
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="功能标签">
+      <button class="tab active" data-tab="home">首页</button>
+      <button class="tab" data-tab="create">创建知识库</button>
+      <button class="tab" data-tab="upload">上传文档</button>
+      <button class="tab" data-tab="knowledge">知识库列表</button>
+      <button class="tab" data-tab="documents">文档列表</button>
+      <button class="tab" data-tab="chat">AI 问答</button>
+      <button class="tab" data-tab="logs" data-admin-only>问答日志</button>
+      <button class="tab" data-tab="admin-users" data-admin-only>用户管理</button>
+      <button class="tab" data-tab="user">用户中心</button>
+    </nav>
+
+    <!-- MODULE: Home -->
+    <section class="tab-page active" data-page="home">
+      <div class="home-hero">
+        <div class="network-bg" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="home-copy">
+          <p class="eyebrow">资料整理 · 智能问答 · 本地使用</p>
+          <h2>把你的文件交给知识库，需要时直接问它。</h2>
+          <p>上传文档后，可以像聊天一样提问。系统会帮你从资料里找重点、做总结、查内容，还能按知识库或指定文档回答。</p>
+          <div class="home-actions">
+            <button type="button" id="toggleUsageGuideBtn">打开使用说明</button>
+            <button type="button" class="ghost" data-home-tab="chat">进入 AI 问答</button>
+          </div>
+        </div>
+        <div class="notice-card">
+          <h3>使用前请了解</h3>
+          <ul>
+            <li>第一次使用时，建议先新建一个知识库，再把同一类资料放进去。</li>
+            <li>支持上传 Word、PPT、Excel、PDF、图片、Markdown、TXT 等常见文件。</li>
+            <li>文档越清晰，AI 回答越准确；扫描件或图片文字可能需要更久处理。</li>
+            <li>提问前可以选择整个知识库，也可以只选择其中几个文档。</li>
+            <li>删除知识库或文档后，页面里对应资料也会移除，请确认后再操作。</li>
+          </ul>
+        </div>
+        
+      </div>
+      <section id="usageGuide" class="usage-guide hidden">
+        <div class="panel-ribbon">使用说明</div>
+        <div class="guide-grid">
+          <article><b>1. 登录 / 注册</b><p>输入用户名和密码即可进入。管理员账号需要额外密钥，适合负责管理的人使用。</p></article>
+          <article><b>2. 创建知识库</b><p>知识库可以理解成一个资料分类，例如学习资料、小说资料、工作文件。</p></article>
+          <article><b>3. 上传文档</b><p>选择知识库后上传文件，系统会自动读取内容，后续就能围绕这些资料提问。</p></article>
+          <article><b>4. 管理资料</b><p>可以查看已有知识库和文档，打开它们所在位置，也可以删除不需要的资料。</p></article>
+          <article><b>5. AI 问答</b><p>进入问答后选择资料范围，然后直接输入问题，AI 会根据你选中的资料回答。</p></article>
+          <article><b>6. 聊天记录</b><p>之前问过的问题可以在聊天记录里找回，方便继续查看当时的对话。</p></article>
+          <article><b>7. 问答日志</b><p>管理员可以查看问答记录，用来了解系统每次回答时参考了哪些内容。</p></article>
+          <article><b>8. 用户中心</b><p>可以修改密码，也可以更换自己的头像和页面里的像素动物头像。</p></article>
+          <article><b>9. 用户管理</b><p>管理员可以查看账号列表，并在用户忘记密码时帮助重置。</p></article>
+        </div>
+      </section>
+      <div class="feature-grid">
+        <article><strong>简单管理</strong><span>把不同类型的文件分别放进不同知识库，找资料更方便。</span></article>
+        <article><strong>多格式支持</strong><span>常见文档、表格、PDF 和图片资料都可以上传使用。</span></article>
+        <article><strong>像聊天一样问资料</strong><span>不用自己一页页翻文件，直接提问就能得到整理后的答案。</span></article>
+      </div>
+    </section>
+
+    <!-- MODULE: Knowledge Base Create -->
+    <section class="tab-page" data-page="create">
+      <section class="panel">
+        <div class="panel-ribbon">创建知识库</div>
+        <div class="panel-head"><div><h2>创建知识库</h2><p>默认创建在项目文件夹内，也可选择已有知识库文件夹路径。</p></div></div>
+        <form id="createForm" class="form">
+          <label>知识库名称<input id="name" name="name" placeholder="例如：项目资料库" required /></label>
+          <label>描述<textarea id="description" name="description" placeholder="这个知识库用于存放什么资料"></textarea></label>
+          <label class="check-row"><input id="useDefaultPath" name="useDefaultPath" type="checkbox" checked /> 使用默认路径</label>
+          <label id="customPathWrap" class="hidden">自选路径<div class="path-picker"><input name="customPath" readonly placeholder="点击右侧按钮选择文件夹" /><button type="button" class="ghost" id="pickCustomPath">选择文件夹</button></div></label>
+          <button type="submit">创建知识库</button>
+        </form>
+      </section>
+    </section>
+
+    <!-- MODULE: Document Upload -->
+    <section class="tab-page" data-page="upload">
+      <section class="panel">
+        <div class="panel-ribbon">上传文档</div>
+        <div class="panel-head"><div><h2>上传文档</h2><p>上传到选中的知识库，系统会自动解析并切片。</p></div></div>
+        <form id="uploadForm" class="form">
+          <label>选择知识库<select id="knowledgeBaseSelect" name="knowledgeBaseId"></select></label>
+          <label>选择文档<input name="documentFile" type="file" /></label>
+          <button type="submit">上传到知识库</button>
+        </form>
+      </section>
+    </section>
+
+    <!-- MODULE: Knowledge Base List -->
+    <section class="tab-page" data-page="knowledge">
+      <section class="panel">
+        <div class="panel-ribbon">知识库</div>
+        <div class="panel-head"><div><h2>知识库列表</h2><p>点击知识库卡片可选中，按钮可打开位置或删除。</p></div><button class="ghost" id="refreshBtn">刷新知识库</button></div>
+        <div id="kbList" class="kb-list"></div>
+      </section>
+    </section>
+
+    <!-- MODULE: Document List -->
+    <section class="tab-page" data-page="documents">
+      <section class="panel">
+        <div class="panel-ribbon">文档</div>
+        <div class="panel-head"><div><h2 id="docTitle">请选择一个知识库</h2><p>管理当前知识库下的文档。</p></div></div>
+        <div id="docList" class="kb-list"></div>
+      </section>
+    </section>
+
+    <!-- MODULE: AI Chat -->
+    <section class="tab-page" data-page="chat">
+      <section class="panel ai-panel">
+        <div class="panel-ribbon">AI 问答</div>
+        <div class="panel-head">
+          <div><h2>AI 问答</h2><p id="chatSessionMeta">请先选择知识库和文档范围。</p><h3 id="chatSessionTitle">未连接知识库</h3></div>
+          <div class="toolbar"><button type="button" class="ghost" id="openChatSetupBtn">选择知识库 / 文档</button><button type="button" class="ghost" id="openChatHistoryBtn">聊天记录</button></div>
+        </div>
+        <div class="chat-console">
+          <div id="chatMessages" class="chat-messages"><div class="chat-placeholder">请先选择知识库和文档范围。</div></div>
+          <form id="chatForm" class="chat-input-row">
+            <textarea name="question" placeholder="输入问题，按 Enter 发送，Shift + Enter 换行"></textarea>
+            <button type="submit">发送</button>
+          </form>
+        </div>
+        <div id="chatSetupModal" class="chat-setup-modal hidden">
+          <div class="chat-setup-card">
+            <div class="chat-setup-head"><div><span class="panel-ribbon">问答设置</span><h3 id="chatSetupTitle">选择知识库</h3><p id="chatSetupHint">点击知识库卡片后进入文档范围选择。</p></div></div>
+            <div class="chat-step-dots"><span data-chat-step-dot="kb" class="active">1 知识库</span><span data-chat-step-dot="docs">2 文档范围</span></div>
+            <div data-chat-step="kb" class="chat-step active"><div id="chatKbCards" class="chat-choice-grid"></div></div>
+            <div data-chat-step="docs" class="chat-step">
+              <p id="chatDocStageTitle"></p>
+              <div class="chat-scope-row"><button type="button" data-chat-scope="knowledgeBase" class="active">整个知识库</button><button type="button" data-chat-scope="documents">指定文档</button></div>
+              <div id="chatDocumentsWrap" class="hidden"><div id="chatDocumentSelect" class="chat-doc-list"></div></div>
+              <label>回答模式<select id="answerModeSelect"><option value="thinking">思考模式</option><option value="fast">快速模式</option></select></label>
+              <p id="answerModeHint" class="hint">思考模式会读取更多片段并分析资料依据，回答更完整，但耗时更长。</p>
+              <div class="toolbar"><button type="button" class="ghost" id="backToChatKb">返回上一步</button><button type="button" id="enterChatBtn">进入问答</button></div>
+            </div>
+          </div>
+        </div>
+        <div id="chatHistoryModal" class="chat-setup-modal hidden">
+          <div class="chat-setup-card">
+            <div class="chat-setup-head"><div><span class="panel-ribbon">聊天记录</span><h3>聊天记录</h3><p>点击记录后确认是否回溯，删除记录需要二次确认。</p></div><button type="button" class="ghost small-btn" id="closeChatHistoryBtn">关闭</button></div>
+            <div id="chatHistoryList" class="chat-history-list"></div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- MODULE: Logs -->
+    <section class="tab-page" data-page="logs">
+      <section class="panel">
+        <div class="panel-head"><div><h2>问答日志</h2><p>查看问答记录、检索片段和回答结果。日志不会自动导出，需要手动选择导出。</p></div><div class="toolbar"><button class="ghost" id="exportSelectedLogsBtn">导出选中</button><button class="ghost" id="exportAllLogsBtn">一键导出</button><button class="ghost" id="refreshLogsBtn">刷新日志</button></div></div>
+        <div class="log-export-options">
+          <label class="check-row"><input id="useDefaultLogPath" type="checkbox" checked /> 使用默认导出路径</label>
+          <label id="customLogPathWrap" class="hidden">自选导出路径<div class="path-picker"><input id="customLogPath" readonly placeholder="点击右侧按钮选择文件夹" /><button type="button" class="ghost" id="pickLogPath">选择文件夹</button></div></label>
+        </div>
+        <div id="logList" class="kb-list"></div>
+        <div id="logDetail" class="log-detail empty">请选择一条日志</div>
+      </section>
+    </section>
+
+    <!-- MODULE: Admin Users -->
+    <section class="tab-page" data-page="admin-users" data-admin-only>
+      <section class="panel">
+        <div class="panel-ribbon">用户管理</div>
+        <div class="panel-head">
+          <div><h2>用户管理</h2><p>管理员可查看已注册用户和管理员账号。密码为加密保存，不显示原文。</p></div>
+          <button type="button" class="ghost" id="refreshAdminUsersBtn">刷新用户</button>
+        </div>
+        <div id="adminUsersList" class="kb-list"></div>
+      </section>
+    </section>
+    <!-- MODULE: User Center -->
+    <section class="tab-page" data-page="user">
+      <section class="panel">
+        <div class="panel-ribbon">用户中心</div>
+        <div class="panel-head"><div><h2>用户中心</h2><p id="userCenterInfo">管理当前账号、密码和各位置的像素动物头像。</p></div><button type="button" class="danger" id="logoutBtn">退出登录</button></div>
+        <div class="user-center-tabs">
+          <button type="button" class="active" data-user-center-tab="profile">头像设置</button>
+          <button type="button" data-user-center-tab="password">修改密码</button>
+        </div>
+        <div id="userProfilePage" class="user-center-subpage active">
+          <div class="user-center-grid">
+            <div class="user-center-card"><h3>用户头像</h3><p>只影响用户资料展示。</p><div id="userAvatarGrid" class="avatar-grid"></div></div>
+            <div class="user-center-card"><h3>主页左上角头像</h3><p>只影响项目标题旁的头像。</p><div id="brandAvatarGrid" class="avatar-grid"></div></div>
+            <div class="user-center-card"><h3>请稍等头像</h3><p>只影响等待弹窗左侧头像。</p><div id="busyAvatarGrid" class="avatar-grid"></div></div>
+            <div class="user-center-card"><h3>AI 等待头像</h3><p>只影响问答时临时回复头像。</p><div id="aiAvatarGrid" class="avatar-grid"></div></div>
+          </div>
+        </div>
+        <div id="userPasswordPage" class="user-center-subpage">
+          <form id="passwordForm" class="form password-form">
+            <h3>修改密码</h3>
+            <label>原密码<input name="oldPassword" type="password" required /></label>
+            <label>新密码<input name="newPassword" type="password" required /></label>
+            <label>二次确认新密码<input name="newPasswordConfirm" type="password" required /></label>
+            <button type="submit">保存新密码</button>
+          </form>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <!-- MODULE: Global Busy Overlay -->
+  <div id="busyOverlay" class="busy-overlay hidden" aria-live="polite">
+    <div class="busy-card">
+      <div class="busy-orb" data-avatar-slot="busyAvatarId" aria-label="像素动物头像"></div>
+      <div><h3>请稍等</h3><p id="busyText">正在处理，请不要进行其他操作。</p></div>
+    </div>
+  </div>
+
+  <!-- MODULE LOAD ORDER: core -> auth -> knowledge/documents -> chat -> logs -> boot -->
+  <script src="/js/app-core.js?v=20260513-maintain"></script>
+  <script src="/js/auth.js?v=20260513-maintain"></script>
+  <script src="/js/knowledge-documents.js?v=20260513-maintain"></script>
+  <script src="/js/chat.js?v=20260513-maintain"></script>
+  <script src="/js/logs.js?v=20260513-maintain"></script>
+  <script src="/js/boot.js?v=20260513-maintain"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
