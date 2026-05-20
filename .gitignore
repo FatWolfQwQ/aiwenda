@@ -1,0 +1,6 @@
+﻿.env
+build/
+logs/
+*.log
+data/*
+!data/db.example.json

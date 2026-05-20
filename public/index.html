@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>&#x77E5;&#x67A2; AI &#x77E5;&#x8BC6;&#x5E93;&#x5E73;&#x53F0;</title>
+  <link rel="stylesheet" href="/styles.css?v=20260514-group-share-status" />
+</head>
+<body>
+  <!-- MODULE: Auth Gate -->
+  <section id="authGate" class="auth-gate">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="auth-avatar" data-auth-preview></div>
+        <div><h1>登录知枢知识库</h1></div>
+      </div>
+      <div class="auth-switch">
+        <button type="button" class="active" data-auth-mode="login">登录</button>
+        <button type="button" data-auth-mode="register">注册</button>
+      </div>
+      <form id="authLoginForm" class="form auth-form" data-auth-panel="login">
+        <label>用户名<input name="username" autocomplete="username" required /></label>
+        <label>密码<input name="password" type="password" autocomplete="current-password" required /></label>
+        <button type="submit">登录</button>
+      </form>
+      <form id="authRegisterForm" class="form auth-form hidden" data-auth-panel="register">
+        <label>用户名<input name="username" autocomplete="username" required /></label>
+        <label>密码<input name="password" type="password" autocomplete="new-password" required /></label>
+        <label>二次确认密码<input name="passwordConfirm" type="password" autocomplete="new-password" required /></label>
+        <label>账号角色<select name="role"><option value="user">普通用户</option><option value="admin">管理员</option></select></label><label id="userTypeWrap">普通用户类型<select name="userType"><option value="personal">个人用户</option><option value="enterprise">企业用户</option></select></label><p class="meta">密码至少 8 位，且必须同时包含英文字母和数字。</p>
+        <label class="hidden" id="adminKeyWrap">管理员密钥<input name="adminKey" placeholder="注册管理员需输入密钥" /></label>
+        <div><strong>选择头像</strong><div id="authAvatarGrid" class="avatar-grid"></div></div>
+        <button type="submit">注册并登录</button>
+      </form>
+      <div id="authMessage" class="auth-message"></div>
+    </div>
+  </section>
+
+  <!-- MODULE: App Shell -->
+  <main id="appShell" class="app-shell auth-locked">
+    <header class="topbar">
+      <div class="brand-block">
+        <div class="wolf-mark" data-avatar-slot="brandAvatarId" aria-label="像素动物头像"></div>
+        <div>
+          
+          <h1>知枢 AI 知识库平台</h1>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button type="button" class="user-pill" id="userPill" data-tab="user">用户中心</button>
+        <div class="status" id="status">连接中...</div>
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="&#x529F;&#x80FD;&#x6807;&#x7B7E;">
+      <button class="tab active" data-tab="home">&#x9996;&#x9875;</button>
+      <button class="tab" data-tab="create">&#x521B;&#x5EFA;&#x77E5;&#x8BC6;&#x5E93;</button>
+      <button class="tab" data-tab="upload">&#x4E0A;&#x4F20;&#x6587;&#x6863;</button>
+      <button class="tab" data-tab="knowledge">&#x77E5;&#x8BC6;&#x5E93;&#x5217;&#x8868;</button>
+      <button class="tab" data-tab="documents">&#x6587;&#x6863;&#x5217;&#x8868;</button>
+      <button class="tab" data-tab="groups" data-enterprise-only>&#x7528;&#x6237;&#x7EC4;</button>
+      <button class="tab" data-tab="chat">AI &#x95EE;&#x7B54;</button>
+      <button class="tab" data-tab="logs" data-admin-only>&#x95EE;&#x7B54;&#x65E5;&#x5FD7;</button>
+      <button class="tab" data-tab="admin-users" data-admin-only>&#x7528;&#x6237;&#x7BA1;&#x7406;</button>
+      <button class="tab" data-tab="user">&#x7528;&#x6237;&#x4E2D;&#x5FC3;</button>
+    </nav>
+
+    <!-- MODULE: Home -->
+    <section class="tab-page active" data-page="home">
+      <div class="home-hero">
+        <div class="network-bg" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="home-copy">
+          <p class="eyebrow">&#x8D44;&#x6599;&#x6574;&#x7406; ? &#x667A;&#x80FD;&#x95EE;&#x7B54; ? &#x6743;&#x9650;&#x5171;&#x4EAB;</p>
+          <h2>&#x628A;&#x8D44;&#x6599;&#x4EA4;&#x7ED9;&#x77E5;&#x8BC6;&#x5E93;&#xFF0C;&#x9700;&#x8981;&#x65F6;&#x76F4;&#x63A5;&#x95EE; AI&#x3002;</h2>
+          <p>&#x4E0A;&#x4F20;&#x6587;&#x6863;&#x540E;&#xFF0C;&#x53EF;&#x4EE5;&#x50CF;&#x804A;&#x5929;&#x4E00;&#x6837;&#x63D0;&#x95EE;&#x3002;&#x7CFB;&#x7EDF;&#x4F1A;&#x6309;&#x4F60;&#x7684;&#x6743;&#x9650;&#x8BFB;&#x53D6;&#x4E2A;&#x4EBA;&#x77E5;&#x8BC6;&#x5E93;&#x6216;&#x7528;&#x6237;&#x7EC4;&#x5171;&#x4EAB;&#x77E5;&#x8BC6;&#x5E93;&#x3002;</p>
+          <div class="home-actions">
+            <button type="button" id="toggleUsageGuideBtn">&#x6253;&#x5F00;&#x4F7F;&#x7528;&#x8BF4;&#x660E;</button>
+            <button type="button" class="ghost" data-home-tab="chat">&#x8FDB;&#x5165; AI &#x95EE;&#x7B54;</button>
+          </div>
+        </div>
+        <div class="notice-card">
+          <h3>&#x4F7F;&#x7528;&#x524D;&#x8BF7;&#x4E86;&#x89E3;</h3>
+          <ul>
+            <li>&#x9996;&#x6B21;&#x4F7F;&#x7528;&#x8BF7;&#x5148;&#x521B;&#x5EFA;&#x77E5;&#x8BC6;&#x5E93;&#xFF0C;&#x518D;&#x4E0A;&#x4F20;&#x540C;&#x4E00;&#x7C7B;&#x8D44;&#x6599;&#x3002;</li>
+            <li>&#x652F;&#x6301; Word&#x3001;PPT&#x3001;Excel&#x3001;PDF&#x3001;&#x56FE;&#x7247;&#x3001;Markdown&#x3001;TXT &#x7B49;&#x5E38;&#x89C1;&#x6587;&#x4EF6;&#x3002;</li>
+            <li>&#x77E5;&#x8BC6;&#x5E93;&#x9ED8;&#x8BA4;&#x4EC5;&#x81EA;&#x5DF1;&#x53EF;&#x89C1;&#xFF0C;&#x9700;&#x8981;&#x5171;&#x4EAB;&#x65F6;&#x53EF;&#x540C;&#x6B65;&#x5230;&#x4E00;&#x4E2A;&#x6216;&#x591A;&#x4E2A;&#x7528;&#x6237;&#x7EC4;&#x3002;</li>
+            <li>&#x666E;&#x901A;&#x7EC4;&#x6210;&#x5458;&#x53EA;&#x80FD;&#x67E5;&#x770B;&#x548C;&#x95EE;&#x7B54;&#x5171;&#x4EAB;&#x77E5;&#x8BC6;&#x5E93;&#xFF0C;&#x4E0D;&#x80FD;&#x4E0A;&#x4F20;&#x6216;&#x5220;&#x9664;&#x3002;</li>
+          </ul>
+        </div>
+      </div>
+      <section id="usageGuide" class="usage-guide hidden"><div class="panel-ribbon">&#x4F7F;&#x7528;&#x8BF4;&#x660E;</div><div class="guide-grid">
+        <article><b>1. &#x767B;&#x5F55; / &#x6CE8;&#x518C;</b><p>&#x4F7F;&#x7528;&#x7528;&#x6237;&#x540D;&#x548C;&#x5BC6;&#x7801;&#x8FDB;&#x5165;&#x7CFB;&#x7EDF;&#x3002;</p></article>
+        <article><b>2. &#x521B;&#x5EFA;&#x77E5;&#x8BC6;&#x5E93;</b><p>&#x77E5;&#x8BC6;&#x5E93;&#x7528;&#x4E8E;&#x5206;&#x7C7B;&#x4FDD;&#x5B58;&#x8D44;&#x6599;&#x3002;</p></article>
+        <article><b>3. &#x7528;&#x6237;&#x7EC4;&#x5171;&#x4EAB;</b><p>&#x628A;&#x81EA;&#x5DF1;&#x7684;&#x77E5;&#x8BC6;&#x5E93;&#x5171;&#x4EAB;&#x7ED9;&#x591A;&#x4E2A;&#x7528;&#x6237;&#x7EC4;&#x3002;</p></article>
+      </div></section>
+      <div class="feature-grid">
+        <article><strong>&#x79C1;&#x6709;&#x4F18;&#x5148;</strong><span>&#x4E2A;&#x4EBA;&#x77E5;&#x8BC6;&#x5E93;&#x9ED8;&#x8BA4;&#x53EA;&#x6709;&#x81EA;&#x5DF1;&#x53EF;&#x89C1;&#x3002;</span></article>
+        <article><strong>&#x7EC4;&#x5185;&#x5171;&#x4EAB;</strong><span>&#x53EF;&#x6309;&#x9700;&#x5171;&#x4EAB;&#x5230;&#x591A;&#x4E2A;&#x7528;&#x6237;&#x7EC4;&#x3002;</span></article>
+        <article><strong>&#x667A;&#x80FD;&#x95EE;&#x7B54;</strong><span>&#x76F4;&#x63A5;&#x63D0;&#x95EE;&#x5373;&#x53EF;&#x83B7;&#x5F97;&#x6574;&#x7406;&#x540E;&#x7684;&#x7B54;&#x6848;&#x3002;</span></article>
+      </div>
+    </section>
+
+    <!-- MODULE: Knowledge Base Create -->
+    <section class="tab-page" data-page="create"><section class="panel">
+      <div class="panel-ribbon">&#x521B;&#x5EFA;&#x77E5;&#x8BC6;&#x5E93;</div>
+      <div class="panel-head"><div><h2>&#x521B;&#x5EFA;&#x77E5;&#x8BC6;&#x5E93;</h2><p>&#x9ED8;&#x8BA4;&#x521B;&#x5EFA;&#x5728;&#x9879;&#x76EE;&#x6587;&#x4EF6;&#x5939;&#x5185;&#x3002;</p></div></div>
+      <form id="createForm" class="form">
+        <label>&#x77E5;&#x8BC6;&#x5E93;&#x540D;&#x79F0;<input id="name" name="name" placeholder="&#x4F8B;&#x5982;&#xFF1A;&#x9879;&#x76EE;&#x8D44;&#x6599;&#x5E93;" required /></label>
+        <label>&#x63CF;&#x8FF0;<textarea id="description" name="description" placeholder="&#x8FD9;&#x4E2A;&#x77E5;&#x8BC6;&#x5E93;&#x7528;&#x4E8E;&#x5B58;&#x653E;&#x4EC0;&#x4E48;&#x8D44;&#x6599;&#xFF1F;"></textarea></label>
+        <label class="check-row"><input id="useDefaultPath" name="useDefaultPath" type="checkbox" checked /> &#x4F7F;&#x7528;&#x9ED8;&#x8BA4;&#x8DEF;&#x5F84;</label>
+        <label id="customPathWrap" class="hidden">&#x81EA;&#x9009;&#x8DEF;&#x5F84;<div class="path-picker"><input name="customPath" readonly placeholder="&#x70B9;&#x51FB;&#x53F3;&#x4FA7;&#x6309;&#x94AE;&#x9009;&#x62E9;&#x6587;&#x4EF6;&#x5939;" /><button type="button" class="ghost" id="pickCustomPath">&#x9009;&#x62E9;&#x6587;&#x4EF6;&#x5939;</button></div></label>
+        <button type="submit">&#x521B;&#x5EFA;&#x77E5;&#x8BC6;&#x5E93;</button>
+      </form>
+    </section></section>
+
+    <!-- MODULE: Document Upload -->    <!-- MODULE: Document Upload -->    <!-- MODULE: Document Upload -->
+    <section class="tab-page" data-page="upload">
+      <section class="panel">
+        <div class="panel-ribbon">上传文档</div>
+        <div class="panel-head"><div><h2>上传文档</h2><p>上传到选中的知识库，系统会自动解析并切片。</p></div></div>
+        <form id="uploadForm" class="form">
+          <label>选择知识库<select id="knowledgeBaseSelect" name="knowledgeBaseId"></select></label>
+          <label>选择文档<input name="documentFile" type="file" /></label>
+          <button type="submit">上传到知识库</button>
+        </form>
+      </section>
+    </section>
+
+    <!-- MODULE: Knowledge Base List -->
+    <section class="tab-page" data-page="knowledge">
+      <section class="panel">
+        <div class="panel-ribbon">知识库</div>
+        <div class="panel-head"><div><h2>知识库列表</h2><p>点击知识库卡片可选中，按钮可打开位置或删除。</p></div><button class="ghost" id="refreshBtn">刷新知识库</button></div>
+        <div id="kbList" class="kb-list"></div>
+      </section>
+    </section>
+
+
+    <!-- MODULE: User Groups -->
+    <section class="tab-page" data-page="groups"><section class="panel groups-panel">
+      <div class="panel-ribbon">&#x7528;&#x6237;&#x7EC4;</div>
+      <div class="panel-head"><div><h2>&#x7528;&#x6237;&#x7EC4;</h2><p>&#x6309;&#x9875;&#x9762;&#x5206;&#x5F00;&#x7BA1;&#x7406;&#x521B;&#x5EFA;&#x3001;&#x641C;&#x7D22;&#x3001;&#x5DF2;&#x52A0;&#x5165;&#x7528;&#x6237;&#x7EC4;&#x548C;&#x8BE6;&#x60C5;&#x3002;</p></div></div>
+      <div class="user-center-tabs group-tabs">
+        <button type="button" class="active" data-group-tab="create">&#x521B;&#x5EFA;&#x7528;&#x6237;&#x7EC4;</button>
+        <button type="button" data-group-tab="search">&#x641C;&#x7D22;&#x52A0;&#x5165;</button>
+        <button type="button" data-group-tab="mine">&#x6211;&#x7684;&#x7528;&#x6237;&#x7EC4;</button>
+        <button type="button" data-group-tab="detail">&#x7528;&#x6237;&#x7EC4;&#x8BE6;&#x60C5;</button>
+      </div>
+      <div class="group-subpage active" data-group-page="create"><form id="groupCreateForm" class="form group-card"><h3>&#x521B;&#x5EFA;&#x7528;&#x6237;&#x7EC4;</h3><label>&#x7528;&#x6237;&#x7EC4;&#x540D;&#x79F0;<input name="name" required placeholder="&#x4F8B;&#x5982;&#xFF1A;&#x9879;&#x76EE;&#x8D44;&#x6599;&#x7EC4;" /></label><label>&#x7B80;&#x4ECB;<textarea name="description" placeholder="&#x8FD9;&#x4E2A;&#x7EC4;&#x7528;&#x4E8E;&#x5171;&#x4EAB;&#x54EA;&#x4E9B;&#x8D44;&#x6599;"></textarea></label><label class="check-row"><input name="searchable" type="checkbox" checked /> &#x5141;&#x8BB8;&#x88AB;&#x641C;&#x7D22;&#x5230;</label><button type="submit">&#x521B;&#x5EFA;&#x7528;&#x6237;&#x7EC4;</button></form></div>
+      <div class="group-subpage" data-group-page="search"><form id="groupSearchForm" class="form group-card"><h3>&#x641C;&#x7D22;&#x52A0;&#x5165;</h3><label>&#x641C;&#x7D22;&#x5173;&#x952E;&#x8BCD;<input name="keyword" placeholder="&#x8F93;&#x5165;&#x7528;&#x6237;&#x7EC4;&#x540D;&#x79F0;&#x6216;&#x7B80;&#x4ECB;" /></label><button type="submit">&#x641C;&#x7D22;&#x7528;&#x6237;&#x7EC4;</button><div id="groupSearchList" class="mini-list"></div></form></div>
+      <div class="group-subpage" data-group-page="mine"><section class="group-card"><h3>&#x6211;&#x52A0;&#x5165;&#x7684;&#x7528;&#x6237;&#x7EC4;</h3><div id="myGroupsList" class="mini-list"></div></section></div>
+      <div class="group-subpage" data-group-page="detail"><section class="group-card"><h3>&#x7528;&#x6237;&#x7EC4;&#x8BE6;&#x60C5;</h3><div id="groupDetailPanel" class="mini-list"><div class="empty">&#x8BF7;&#x9009;&#x62E9;&#x4E00;&#x4E2A;&#x7528;&#x6237;&#x7EC4;</div></div></section></div>
+    </section></section>
+
+    <!-- MODULE: Document List -->
+    <section class="tab-page" data-page="documents">
+      <section class="panel">
+        <div class="panel-ribbon">文档</div>
+        <div class="panel-head"><div><h2 id="docTitle">请选择一个知识库</h2><p>管理当前知识库下的文档。</p></div></div>
+        <div id="docList" class="kb-list"></div>
+      </section>
+    </section>
+
+    <!-- MODULE: AI Chat -->
+    <section class="tab-page" data-page="chat">
+      <section class="panel ai-panel">
+        <div class="panel-ribbon">AI 问答</div>
+        <div class="panel-head">
+          <div><h2>AI 问答</h2><p id="chatSessionMeta">请先选择知识库和文档范围。</p><h3 id="chatSessionTitle">未连接知识库</h3></div>
+          <div class="toolbar"><button type="button" class="ghost" id="openChatSetupBtn">选择知识库 / 文档</button><button type="button" class="ghost" id="openChatHistoryBtn">聊天记录</button></div>
+        </div>
+        <div class="chat-console">
+          <div id="chatMessages" class="chat-messages"><div class="chat-placeholder">请先选择知识库和文档范围。</div></div>
+          <form id="chatForm" class="chat-input-row">
+            <textarea name="question" placeholder="输入问题，按 Enter 发送，Shift + Enter 换行"></textarea>
+            <button type="submit">发送</button>
+          </form>
+        </div>
+        <div id="chatSetupModal" class="chat-setup-modal hidden">
+          <div class="chat-setup-card">
+            <div class="chat-setup-head"><div><span class="panel-ribbon">问答设置</span><h3 id="chatSetupTitle">选择知识库</h3><p id="chatSetupHint">点击知识库卡片后进入文档范围选择。</p></div></div>
+            <div class="chat-step-dots"><span data-chat-step-dot="kb" class="active">1 知识库</span><span data-chat-step-dot="docs">2 文档范围</span></div>
+            <div data-chat-step="kb" class="chat-step active"><div id="chatKbCards" class="chat-choice-grid"></div></div>
+            <div data-chat-step="docs" class="chat-step">
+              <p id="chatDocStageTitle"></p>
+              <div class="chat-scope-row"><button type="button" data-chat-scope="knowledgeBase" class="active">整个知识库</button><button type="button" data-chat-scope="documents">指定文档</button></div>
+              <div id="chatDocumentsWrap" class="hidden"><div id="chatDocumentSelect" class="chat-doc-list"></div></div>
+              <label>回答模式<select id="answerModeSelect"><option value="thinking">思考模式</option><option value="fast">快速模式</option></select></label>
+              <p id="answerModeHint" class="hint">思考模式会读取更多片段并分析资料依据，回答更完整，但耗时更长。</p>
+              <div class="toolbar"><button type="button" class="ghost" id="backToChatKb">返回上一步</button><button type="button" id="enterChatBtn">进入问答</button></div>
+            </div>
+          </div>
+        </div>
+        <div id="chatHistoryModal" class="chat-setup-modal hidden">
+          <div class="chat-setup-card">
+            <div class="chat-setup-head"><div><span class="panel-ribbon">聊天记录</span><h3>聊天记录</h3><p>点击记录后确认是否回溯，删除记录需要二次确认。</p></div><button type="button" class="ghost small-btn" id="closeChatHistoryBtn">关闭</button></div>
+            <div id="chatHistoryList" class="chat-history-list"></div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- MODULE: Logs -->
+    <section class="tab-page" data-page="logs">
+      <section class="panel">
+        <div class="panel-head"><div><h2>问答日志</h2><p>查看问答记录、检索片段和回答结果。日志不会自动导出，需要手动选择导出。</p></div><div class="toolbar"><button class="ghost" id="exportSelectedLogsBtn">导出选中</button><button class="ghost" id="exportAllLogsBtn">一键导出</button><button class="ghost" id="refreshLogsBtn">刷新日志</button></div></div>
+        <div class="log-export-options">
+          <label class="check-row"><input id="useDefaultLogPath" type="checkbox" checked /> 使用默认导出路径</label>
+          <label id="customLogPathWrap" class="hidden">自选导出路径<div class="path-picker"><input id="customLogPath" readonly placeholder="点击右侧按钮选择文件夹" /><button type="button" class="ghost" id="pickLogPath">选择文件夹</button></div></label>
+        </div>
+        <div id="logList" class="kb-list"></div>
+        <div id="logDetail" class="log-detail empty">请选择一条日志</div>
+      </section>
+    </section>
+
+    <!-- MODULE: Admin Users -->
+    <section class="tab-page" data-page="admin-users" data-admin-only><section class="panel"><div class="panel-ribbon">&#x7528;&#x6237;&#x7BA1;&#x7406;</div><div class="panel-head"><div><h2>&#x7528;&#x6237;&#x7BA1;&#x7406;</h2><p>&#x7BA1;&#x7406;&#x5458;&#x53EF;&#x4EE5;&#x67E5;&#x770B;&#x5DF2;&#x6CE8;&#x518C;&#x8D26;&#x53F7;&#xFF0C;&#x5E76;&#x5728;&#x7528;&#x6237;&#x5FD8;&#x8BB0;&#x5BC6;&#x7801;&#x65F6;&#x91CD;&#x7F6E;&#x5BC6;&#x7801;&#x3002;</p></div><button type="button" class="ghost" id="refreshAdminUsersBtn">&#x5237;&#x65B0;&#x7528;&#x6237;</button></div><div id="adminUsersList" class="kb-list"></div></section></section>
+    <!-- MODULE: User Center -->
+    <section class="tab-page" data-page="user"><section class="panel"><div class="panel-ribbon">&#x7528;&#x6237;&#x4E2D;&#x5FC3;</div><div class="panel-head"><div><h2>&#x7528;&#x6237;&#x4E2D;&#x5FC3;</h2><p id="userCenterInfo">&#x7BA1;&#x7406;&#x5F53;&#x524D;&#x8D26;&#x53F7;&#x3001;&#x5BC6;&#x7801;&#x548C;&#x9875;&#x9762;&#x5934;&#x50CF;&#x3002;</p></div><button type="button" class="danger" id="logoutBtn">&#x9000;&#x51FA;&#x767B;&#x5F55;</button></div><div class="user-center-tabs"><button type="button" class="active" data-user-center-tab="profile">&#x5934;&#x50CF;&#x8BBE;&#x7F6E;</button><button type="button" data-user-center-tab="password">&#x4FEE;&#x6539;&#x5BC6;&#x7801;</button></div><div id="userProfilePage" class="user-center-subpage active"><div class="user-center-grid"><div class="user-center-card"><h3>&#x7528;&#x6237;&#x5934;&#x50CF;</h3><p>&#x53EA;&#x5F71;&#x54CD;&#x7528;&#x6237;&#x8D44;&#x6599;&#x5C55;&#x793A;&#x3002;</p><div id="userAvatarGrid" class="avatar-grid"></div></div><div class="user-center-card"><h3>&#x4E3B;&#x9875;&#x5DE6;&#x4E0A;&#x89D2;&#x5934;&#x50CF;</h3><p>&#x53EA;&#x5F71;&#x54CD;&#x9879;&#x76EE;&#x6807;&#x9898;&#x65C1;&#x7684;&#x5934;&#x50CF;&#x3002;</p><div id="brandAvatarGrid" class="avatar-grid"></div></div><div class="user-center-card"><h3>&#x8BF7;&#x7A0D;&#x7B49;&#x5934;&#x50CF;</h3><p>&#x53EA;&#x5F71;&#x54CD;&#x7B49;&#x5F85;&#x5F39;&#x7A97;&#x5DE6;&#x4FA7;&#x5934;&#x50CF;&#x3002;</p><div id="busyAvatarGrid" class="avatar-grid"></div></div><div class="user-center-card"><h3>AI &#x7B49;&#x5F85;&#x5934;&#x50CF;</h3><p>&#x53EA;&#x5F71;&#x54CD;&#x95EE;&#x7B54;&#x65F6;&#x7684;&#x4E34;&#x65F6;&#x56DE;&#x590D;&#x5934;&#x50CF;&#x3002;</p><div id="aiAvatarGrid" class="avatar-grid"></div></div></div></div><div id="userPasswordPage" class="user-center-subpage"><form id="passwordForm" class="form password-form"><h3>&#x4FEE;&#x6539;&#x5BC6;&#x7801;</h3><label>&#x539F;&#x5BC6;&#x7801;<input name="oldPassword" type="password" required /></label><label>&#x65B0;&#x5BC6;&#x7801;<input name="newPassword" type="password" required /></label><label>&#x4E8C;&#x6B21;&#x786E;&#x8BA4;&#x65B0;&#x5BC6;&#x7801;<input name="newPasswordConfirm" type="password" required /></label><button type="submit">&#x4FDD;&#x5B58;&#x65B0;&#x5BC6;&#x7801;</button></form></div></section></section>
+  </main>
+
+  <!-- MODULE: Global Busy Overlay -->
+  <div id="busyOverlay" class="busy-overlay hidden" aria-live="polite">
+    <div class="busy-card">
+      <div class="busy-orb" data-avatar-slot="busyAvatarId" aria-label="像素动物头像"></div>
+      <div><h3>请稍等</h3><p id="busyText">正在处理，请不要进行其他操作。</p></div>
+    </div>
+  </div>
+
+  <!-- MODULE LOAD ORDER: core -> auth -> knowledge/documents -> chat -> logs -> boot -->
+  <script src="/js/app-core.js?v=20260514-text-groups"></script>
+  <script src="/js/auth.js?v=20260513-maintain"></script>
+  <script src="/js/knowledge-documents.js?v=20260514-share-click-fix"></script>
+  <script src="/js/groups.js?v=20260514-share-click-fix"></script>
+  <script src="/js/chat.js?v=20260513-maintain"></script>
+  <script src="/js/logs.js?v=20260513-maintain"></script>
+  <script src="/js/boot.js?v=20260513-maintain"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
