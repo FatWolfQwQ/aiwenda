@@ -114,7 +114,9 @@ public class App {
     }
 
     Map<String, Object> db = db();
-    normalize(db);
+    synchronized (App.class) {
+      normalize(db);
+    }
     Matcher m;
 
     if (method.equals("POST") && path.equals("/api/auth/register")) { authRegister(ex, db, body(ex)); return; }
@@ -397,12 +399,13 @@ public class App {
 
   static void chat(HttpExchange ex, Map<String, Object> db, Map<String, Object> b) throws Exception {
     long start = System.currentTimeMillis();
-    Map<String, Object> user = user(ex, db, s(b.get("userId")));
+    Map<String, Object> readDb = dbSnapshot(db);
+    Map<String, Object> user = user(ex, readDb, s(b.get("userId")));
     String kbId = s(b.get("knowledgeBaseId"));
     String question = s(b.get("question")).trim();
     String mode = "fast".equals(s(b.get("answerMode"))) ? "fast" : "thinking";
-    Map<String, Object> kb = byId(list(db, "knowledgeBases"), kbId);
-    if (user == null || kb == null || !canRead(db, user, kb)) { json(ex, 403, map("error", "No permission to use this knowledge base")); return; }
+    Map<String, Object> kb = byId(list(readDb, "knowledgeBases"), kbId);
+    if (user == null || kb == null || !canRead(readDb, user, kb)) { json(ex, 403, map("error", "No permission to use this knowledge base")); return; }
     if (question.isEmpty()) { json(ex, 400, map("error", "问题不能为空")); return; }
 
     Set<String> docIds = new HashSet<>();
@@ -410,10 +413,10 @@ public class App {
 
     boolean fastMode = mode.equals("fast");
     List<Map<String, Object>> searchHits = RagEngine.selectDiverseHits(
-      RagEngine.retrieveChunks(db, kbId, question, fastMode ? 12 : 60, docIds),
+      RagEngine.retrieveChunks(readDb, kbId, question, fastMode ? 12 : 60, docIds),
       fastMode ? 5 : 24
     );
-    List<Map<String, Object>> representativeHits = fastMode ? new ArrayList<>() : RagEngine.representativeChunks(db, kbId, docIds, 20);
+    List<Map<String, Object>> representativeHits = fastMode ? new ArrayList<>() : RagEngine.representativeChunks(readDb, kbId, docIds, 20);
     List<Map<String, Object>> hits = fastMode ? searchHits : RagEngine.mergeContextHits(searchHits, representativeHits, 36);
     if (hits.isEmpty()) { json(ex, 400, map("error", "No relevant document chunks found")); return; }
 
@@ -432,7 +435,7 @@ public class App {
     List<Object> citationAnalysis = shouldDisplayCitations
       ? analyzeCitationSnippets(question, answer, citationCandidates, false)
       : new ArrayList<>();
-    List<Object> citations = RagEngine.enrichCitationText(citationAnalysis, db);
+    List<Object> citations = RagEngine.enrichCitationText(citationAnalysis, readDb);
 
     long latency = System.currentTimeMillis() - start;
     String now = now();
@@ -451,27 +454,31 @@ public class App {
 
     Map<String, Object> result = map("answer", answer, "citations", citations, "citationDecision", citationDecision, "showRelevance", RagEngine.shouldShowRelevance(question), "answerMode", mode, "latencyMs", latency);
     String chatId = id("chat");
-    list(db, "chatMessages").add(0, map("id", chatId, "ownerUserId", user.get("id"), "knowledgeBaseId", kbId, "knowledgeBaseName", kb.get("name"), "documentIds", new ArrayList<>(docIds), "question", question, "answer", answer, "citations", citations, "citationDecision", citationDecision, "showRelevance", RagEngine.shouldShowRelevance(question), "answerMode", mode, "latencyMs", latency, "model", deepSeekModel(), "createdAt", now));
-    list(db, "aiLogs").add(0, map("id", id("log"), "ownerUserId", user.get("id"), "title", question.length() > 40 ? question.substring(0, 40) : question, "chatId", chatId, "knowledgeBaseId", kbId, "knowledgeBaseName", kb.get("name"), "documentIds", new ArrayList<>(docIds), "question", question, "answerMode", mode, "retrievedChunks", retrievedChunks, "citationAnalysis", map("citations", citations, "reasoning", fastMode ? "fast mode citation evidence refined locally" : "AI citation evidence analysis"), "messages", messages, "answer", answer, "reasoning", "", "model", deepSeekModel(), "latencyMs", latency, "createdAt", now, "exported", false, "bucket", bucket(now)));
-    save(db);
+    synchronized (App.class) {
+      Map<String, Object> writeDb = db();
+      list(writeDb, "chatMessages").add(0, map("id", chatId, "ownerUserId", user.get("id"), "knowledgeBaseId", kbId, "knowledgeBaseName", kb.get("name"), "documentIds", new ArrayList<>(docIds), "question", question, "answer", answer, "citations", citations, "citationDecision", citationDecision, "showRelevance", RagEngine.shouldShowRelevance(question), "answerMode", mode, "latencyMs", latency, "model", deepSeekModel(), "createdAt", now));
+      list(writeDb, "aiLogs").add(0, map("id", id("log"), "ownerUserId", user.get("id"), "title", question.length() > 40 ? question.substring(0, 40) : question, "chatId", chatId, "knowledgeBaseId", kbId, "knowledgeBaseName", kb.get("name"), "documentIds", new ArrayList<>(docIds), "question", question, "answerMode", mode, "retrievedChunks", retrievedChunks, "citationAnalysis", map("citations", citations, "reasoning", fastMode ? "fast mode citation evidence refined locally" : "AI citation evidence analysis"), "messages", messages, "answer", answer, "reasoning", "", "model", deepSeekModel(), "latencyMs", latency, "createdAt", now, "exported", false, "bucket", bucket(now)));
+      save(writeDb);
+    }
     json(ex, 200, result);
   }
 
   static void chatStream(HttpExchange ex, Map<String, Object> db, Map<String, Object> b) throws Exception {
     long start = System.currentTimeMillis();
-    Map<String, Object> user = user(ex, db, s(b.get("userId")));
+    Map<String, Object> readDb = dbSnapshot(db);
+    Map<String, Object> user = user(ex, readDb, s(b.get("userId")));
     String kbId = s(b.get("knowledgeBaseId"));
     String question = s(b.get("question")).trim();
     String mode = "fast".equals(s(b.get("answerMode"))) ? "fast" : "thinking";
-    Map<String, Object> kb = byId(list(db, "knowledgeBases"), kbId);
-    if (user == null || kb == null || !canRead(db, user, kb)) { json(ex, 403, map("error", "No permission to use this knowledge base")); return; }
+    Map<String, Object> kb = byId(list(readDb, "knowledgeBases"), kbId);
+    if (user == null || kb == null || !canRead(readDb, user, kb)) { json(ex, 403, map("error", "No permission to use this knowledge base")); return; }
     if (question.isEmpty()) { json(ex, 400, map("error", "问题不能为空")); return; }
 
     Set<String> docIds = new HashSet<>();
     if (b.get("documentIds") instanceof List<?> ids) for (Object id : ids) docIds.add(s(id));
     boolean fastMode = mode.equals("fast");
-    List<Map<String, Object>> searchHits = RagEngine.selectDiverseHits(RagEngine.retrieveChunks(db, kbId, question, fastMode ? 12 : 60, docIds), fastMode ? 5 : 24);
-    List<Map<String, Object>> representativeHits = fastMode ? new ArrayList<>() : RagEngine.representativeChunks(db, kbId, docIds, 20);
+    List<Map<String, Object>> searchHits = RagEngine.selectDiverseHits(RagEngine.retrieveChunks(readDb, kbId, question, fastMode ? 12 : 60, docIds), fastMode ? 5 : 24);
+    List<Map<String, Object>> representativeHits = fastMode ? new ArrayList<>() : RagEngine.representativeChunks(readDb, kbId, docIds, 20);
     List<Map<String, Object>> hits = fastMode ? searchHits : RagEngine.mergeContextHits(searchHits, representativeHits, 36);
     if (hits.isEmpty()) { json(ex, 400, map("error", "No relevant document chunks found")); return; }
 
@@ -489,17 +496,17 @@ public class App {
         answer.append(delta);
         try { sse(out, "delta", map("text", delta)); } catch (IOException e) { throw new RuntimeException(e); }
       });
-      Map<String, Object> finalData = finalizeChatRecord(db, user, kb, kbId, docIds, question, mode, fastMode, hits, messages, answer.toString(), start);
+      Map<String, Object> finalData = finalizeChatRecord(readDb, user, kb, kbId, docIds, question, mode, fastMode, hits, messages, answer.toString(), start);
       sse(out, "final", finalData);
     }
   }
 
-  static Map<String, Object> finalizeChatRecord(Map<String, Object> db, Map<String, Object> user, Map<String, Object> kb, String kbId, Set<String> docIds, String question, String mode, boolean fastMode, List<Map<String, Object>> hits, List<Object> messages, String answer, long start) throws IOException {
+  static Map<String, Object> finalizeChatRecord(Map<String, Object> readDb, Map<String, Object> user, Map<String, Object> kb, String kbId, Set<String> docIds, String question, String mode, boolean fastMode, List<Map<String, Object>> hits, List<Object> messages, String answer, long start) throws IOException {
     boolean shouldDisplayCitations = RagEngine.shouldShowCitations(question) || RagEngine.shouldForceVisualCitations(hits);
     List<Map<String, Object>> highRelevanceHits = hits.stream().filter(hit -> num(hit.get("score")) >= 0.7).toList();
     List<Map<String, Object>> citationCandidates = highRelevanceHits.isEmpty() ? hits.subList(0, Math.min(6, hits.size())) : highRelevanceHits;
     List<Object> citationAnalysis = shouldDisplayCitations ? analyzeCitationSnippets(question, answer, citationCandidates, false) : new ArrayList<>();
-    List<Object> citations = RagEngine.enrichCitationText(citationAnalysis, db);
+    List<Object> citations = RagEngine.enrichCitationText(citationAnalysis, readDb);
     long latency = System.currentTimeMillis() - start;
     String now = now();
     String citationDecision = shouldDisplayCitations ? (citations.isEmpty() ? "none-high-relevance" : "show") : "ai-summary";
@@ -507,9 +514,12 @@ public class App {
     for (Map<String, Object> hit : hits) retrievedChunks.add(map("id", hit.get("id"), "documentId", hit.get("documentId"), "filename", hit.get("filename"), "chunkIndex", hit.get("chunkIndex"), "score", Math.round(num(hit.get("score")) * 10000.0) / 10000.0, "content", hit.get("content")));
     Map<String, Object> result = map("answer", answer, "citations", citations, "citationDecision", citationDecision, "showRelevance", RagEngine.shouldShowRelevance(question), "answerMode", mode, "latencyMs", latency);
     String chatId = id("chat");
-    list(db, "chatMessages").add(0, map("id", chatId, "ownerUserId", user.get("id"), "knowledgeBaseId", kbId, "knowledgeBaseName", kb.get("name"), "documentIds", new ArrayList<>(docIds), "question", question, "answer", answer, "citations", citations, "citationDecision", citationDecision, "showRelevance", RagEngine.shouldShowRelevance(question), "answerMode", mode, "latencyMs", latency, "model", deepSeekModel(), "createdAt", now));
-    list(db, "aiLogs").add(0, map("id", id("log"), "ownerUserId", user.get("id"), "title", question.length() > 40 ? question.substring(0, 40) : question, "chatId", chatId, "knowledgeBaseId", kbId, "knowledgeBaseName", kb.get("name"), "documentIds", new ArrayList<>(docIds), "question", question, "answerMode", mode, "retrievedChunks", retrievedChunks, "citationAnalysis", map("citations", citations, "reasoning", fastMode ? "fast mode citation evidence refined locally" : "AI citation evidence analysis"), "messages", messages, "answer", answer, "reasoning", "", "model", deepSeekModel(), "latencyMs", latency, "createdAt", now, "exported", false, "bucket", bucket(now)));
-    save(db);
+    synchronized (App.class) {
+      Map<String, Object> writeDb = db();
+      list(writeDb, "chatMessages").add(0, map("id", chatId, "ownerUserId", user.get("id"), "knowledgeBaseId", kbId, "knowledgeBaseName", kb.get("name"), "documentIds", new ArrayList<>(docIds), "question", question, "answer", answer, "citations", citations, "citationDecision", citationDecision, "showRelevance", RagEngine.shouldShowRelevance(question), "answerMode", mode, "latencyMs", latency, "model", deepSeekModel(), "createdAt", now));
+      list(writeDb, "aiLogs").add(0, map("id", id("log"), "ownerUserId", user.get("id"), "title", question.length() > 40 ? question.substring(0, 40) : question, "chatId", chatId, "knowledgeBaseId", kbId, "knowledgeBaseName", kb.get("name"), "documentIds", new ArrayList<>(docIds), "question", question, "answerMode", mode, "retrievedChunks", retrievedChunks, "citationAnalysis", map("citations", citations, "reasoning", fastMode ? "fast mode citation evidence refined locally" : "AI citation evidence analysis"), "messages", messages, "answer", answer, "reasoning", "", "model", deepSeekModel(), "latencyMs", latency, "createdAt", now, "exported", false, "bucket", bucket(now)));
+      save(writeDb);
+    }
     return result;
   }
   static String callDeepSeek(List<Object> messages, String mode) throws Exception {
@@ -962,6 +972,12 @@ public class App {
       return asMap(cachedDb);
     } catch (Exception e) {
       throw new IOException("SQLite 读取失败：" + e.getMessage(), e);
+    }
+  }
+
+  static Map<String, Object> dbSnapshot(Map<String, Object> db) {
+    synchronized (App.class) {
+      return asMap(Json.parse(Json.stringify(db)));
     }
   }
 
