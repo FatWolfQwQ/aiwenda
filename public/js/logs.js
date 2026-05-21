@@ -1,4 +1,4 @@
-// MODULE: Logs
+﻿// MODULE: Logs
 // Owns admin log listing, log details, log deletion, export, and open exported log location.
 
 async function loadLogs(showOverlay = false) {
@@ -100,7 +100,7 @@ logListEl.addEventListener('click', async event => {
   const deleteButton = event.target.closest('[data-delete-log]');
   if (deleteButton) {
     event.stopPropagation();
-    if (!confirmTwice('确定删除这条日志记录吗？这只会删除系统里的记录，不会删除已经导出的日志文件。', '请再次确认：删除后这条日志记录将从日志列表中消失。')) return;
+    if (!await confirmTwice('确定删除这条日志记录吗？这只会删除系统里的记录，不会删除已经导出的日志文件。', '请再次确认：删除后这条日志记录将从日志列表中消失。')) return;
     try {
       await withBusy('正在删除日志，请稍等...', async () => {
         await requestJson(`/api/logs/${encodeURIComponent(deleteButton.dataset.deleteLog)}`, { method: 'DELETE' });
@@ -164,4 +164,5 @@ exportSelectedLogsBtn.addEventListener('click', () => {
   }
   exportLogs(ids).catch(error => alert(error.message));
 });
+
 

@@ -1,4 +1,4 @@
-// MODULE: Knowledge Bases And Documents
+﻿// MODULE: Knowledge Bases And Documents
 // Owns knowledge-base CRUD UI, document upload/list/open/delete UI, and related event handlers.
 
 function renderKnowledgeBaseOptions() {
@@ -226,7 +226,7 @@ kbListEl.addEventListener('click', async event => {
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
-    if (!confirmTwice('确定删除这个知识库吗？该知识库下的文档也会一起删除。', '请再次确认：删除知识库后不可从网站恢复。')) return;
+    if (!await confirmTwice('确定删除这个知识库吗？该知识库下的文档也会一起删除。', '请再次确认：删除知识库后不可从网站恢复。')) return;
 
     deleteButton.disabled = true;
     deleteButton.textContent = '删除中...';
@@ -302,7 +302,7 @@ docListEl.addEventListener('click', async event => {
 
   const button = event.target.closest('[data-delete-doc]');
   if (!button) return;
-  if (!confirmTwice('确定删除这个文档吗？', '请再次确认：删除文档后不可从网站恢复。')) return;
+  if (!await confirmTwice('确定删除这个文档吗？', '请再次确认：删除文档后不可从网站恢复。')) return;
 
   button.disabled = true;
   button.textContent = '删除中...';
@@ -316,3 +316,4 @@ docListEl.addEventListener('click', async event => {
     button.textContent = '删除文档';
   }
 });
+

@@ -244,8 +244,109 @@ function showReplySparkle() {
   setTimeout(() => sparkle.remove(), 1600);
 }
 
-function confirmTwice(firstMessage, secondMessage) {
-  return confirm(firstMessage) && confirm(secondMessage);
+function ensureDialogRoot() {
+  let root = document.querySelector('#appDialogRoot');
+  if (root) return root;
+  root = document.createElement('div');
+  root.id = 'appDialogRoot';
+  root.className = 'app-dialog-root hidden';
+  root.innerHTML = `
+    <div class="app-dialog-card" role="dialog" aria-modal="true">
+      <h3 data-dialog-title>提示</h3>
+      <p data-dialog-message></p>
+      <input data-dialog-input class="hidden" />
+      <div class="app-dialog-actions">
+        <button type="button" class="ghost" data-dialog-cancel>取消</button>
+        <button type="button" data-dialog-ok>确定</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(root);
+  return root;
+}
+
+function appDialog({ title = '提示', message = '', input = false, placeholder = '', okText = '确定', cancelText = '取消' }) {
+  const root = ensureDialogRoot();
+  const titleEl = root.querySelector('[data-dialog-title]');
+  const messageEl = root.querySelector('[data-dialog-message]');
+  const inputEl = root.querySelector('[data-dialog-input]');
+  const okBtn = root.querySelector('[data-dialog-ok]');
+  const cancelBtn = root.querySelector('[data-dialog-cancel]');
+  titleEl.textContent = title;
+  messageEl.textContent = message;
+  inputEl.value = '';
+  inputEl.placeholder = placeholder;
+  inputEl.type = input === 'password' ? 'password' : 'text';
+  inputEl.classList.toggle('hidden', !input);
+  okBtn.textContent = okText;
+  cancelBtn.textContent = cancelText;
+  cancelBtn.classList.toggle('hidden', cancelText === '');
+  root.classList.remove('hidden');
+  if (input) setTimeout(() => inputEl.focus(), 0);
+
+  return new Promise(resolve => {
+    const close = value => {
+      root.classList.add('hidden');
+      okBtn.onclick = null;
+      cancelBtn.onclick = null;
+      root.onclick = null;
+      inputEl.onkeydown = null;
+      resolve(value);
+    };
+    okBtn.onclick = () => close(input ? inputEl.value : true);
+    cancelBtn.onclick = () => close(input ? null : false);
+    root.onclick = event => {
+      if (event.target === root) close(input ? null : false);
+    };
+    inputEl.onkeydown = event => {
+      if (event.key === 'Enter') close(inputEl.value);
+      if (event.key === 'Escape') close(null);
+    };
+  });
+}
+
+function appAlert(message, title = '提示') {
+  const toast = document.createElement('div');
+  toast.className = 'app-toast';
+  toast.textContent = message || '';
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('show'));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 220);
+  }, 2600);
+  return appDialog({ title, message, cancelText: '' });
+}
+
+function appConfirm(message, title = '请确认') {
+  return appDialog({ title, message, okText: '确认', cancelText: '取消' });
+}
+
+function appPrompt(message, options = {}) {
+  return appDialog({
+    title: options.title || '请输入',
+    message,
+    input: options.type || 'text',
+    placeholder: options.placeholder || '',
+    okText: options.okText || '确定',
+    cancelText: options.cancelText || '取消'
+  });
+}
+
+window.alert = message => {
+  const toast = document.createElement('div');
+  toast.className = 'app-toast';
+  toast.textContent = message || '';
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('show'));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 220);
+  }, 2600);
+};
+
+async function confirmTwice(firstMessage, secondMessage) {
+  return await appConfirm(firstMessage) && await appConfirm(secondMessage);
 }
 
 function formatTime(value) {

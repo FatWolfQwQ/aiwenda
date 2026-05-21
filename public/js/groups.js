@@ -1,4 +1,4 @@
-// MODULE: User Groups
+﻿// MODULE: User Groups
 // Owns group search, join requests, member review, and knowledge-base sharing UI.
 
 async function loadGroups(showOverlay = false) {
@@ -206,7 +206,7 @@ groupSearchForm?.addEventListener('submit', async event => {
 groupSearchList?.addEventListener('click', async event => {
   const button = event.target.closest('[data-join-group]');
   if (!button) return;
-  const message = prompt('请输入申请备注，可留空') || '';
+  const message = await appPrompt('请输入申请备注，可留空', { title: '申请加入用户组', placeholder: '例如：我是项目成员，需要查看共享资料' }) || '';
   try {
     await withBusy('正在提交入组申请，请稍等...', () => requestJson(`/api/groups/${encodeURIComponent(button.dataset.joinGroup)}/join-requests`, {
       method: 'POST',
@@ -282,12 +282,12 @@ groupDetailPanel?.addEventListener('click', async event => {
       await renderGroupDetail(selectedGroupId);
     }
     if (removeButton) {
-      if (!confirmTwice('确定移出该成员吗？', '请再次确认：移出后该成员将无法访问组内共享知识库。')) return;
+      if (!await confirmTwice('确定移出该成员吗？', '请再次确认：移出后该成员将无法访问组内共享知识库。')) return;
       await withBusy('正在移出成员，请稍等...', () => requestJson(`/api/groups/${encodeURIComponent(selectedGroupId)}/members/${encodeURIComponent(removeButton.dataset.removeUser)}`, { method: 'DELETE' }));
       await renderGroupDetail(selectedGroupId);
     }
     if (deleteButton) {
-      if (!confirmTwice('确定删除这个用户组吗？', '请再次确认：用户组删除后，共享关系会同时删除。')) return;
+      if (!await confirmTwice('确定删除这个用户组吗？', '请再次确认：用户组删除后，共享关系会同时删除。')) return;
       await withBusy('正在删除用户组，请稍等...', () => requestJson(`/api/groups/${encodeURIComponent(deleteButton.dataset.deleteGroup)}`, { method: 'DELETE' }));
       selectedGroupId = '';
       groupDetailPanel.innerHTML = '<div class="empty">请选择一个用户组</div>';
@@ -297,3 +297,4 @@ groupDetailPanel?.addEventListener('click', async event => {
     alert(error.message);
   }
 });
+

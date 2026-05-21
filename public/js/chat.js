@@ -1,4 +1,4 @@
-// MODULE: AI Chat
+﻿// MODULE: AI Chat
 // Owns chat submission, setup modal, document scope selection, citations, and chat history.
 
 function renderCitationSection(data) {
@@ -240,7 +240,7 @@ chatHistoryList.addEventListener('click', async event => {
   const deleteButton = event.target.closest('[data-delete-chat-history]');
   if (deleteButton) {
     event.stopPropagation();
-    if (!confirmTwice('确定删除这条聊天记录吗？', '请再次确认：删除后这条聊天记录将无法在页面中恢复。')) return;
+    if (!await confirmTwice('确定删除这条聊天记录吗？', '请再次确认：删除后这条聊天记录将无法在页面中恢复。')) return;
     try {
       await withBusy('正在删除聊天记录，请稍等...', async () => {
         await requestJson(`/api/chat-history/${encodeURIComponent(deleteButton.dataset.deleteChatHistory)}`, { method: 'DELETE' });
@@ -254,7 +254,7 @@ chatHistoryList.addEventListener('click', async event => {
 
   const card = event.target.closest('[data-chat-history-id]');
   if (!card) return;
-  if (!confirmTwice('确定回溯到这条聊天记录吗？', '请再次确认：当前对话界面会切换到该记录当时的知识库和文档范围。')) return;
+  if (!await confirmTwice('确定回溯到这条聊天记录吗？', '请再次确认：当前对话界面会切换到该记录当时的知识库和文档范围。')) return;
   try {
     const record = await withBusy('正在恢复聊天记录，请稍等...', () => requestJson(`/api/chat-history/${encodeURIComponent(card.dataset.chatHistoryId)}`));
     chatSelectedKnowledgeBaseId = record.knowledgeBaseId;
@@ -276,6 +276,7 @@ chatHistoryList.addEventListener('click', async event => {
     alert(error.message);
   }
 });
+
 
 
 

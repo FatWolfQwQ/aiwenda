@@ -3,6 +3,31 @@
 
 let selectedRegisterAvatarId = 'wolf';
 
+function ensureRegisterHints() {
+  const passwordInput = authRegisterForm?.password;
+  const userTypeWrap = document.querySelector('#userTypeWrap');
+  if (passwordInput && !document.querySelector('#registerPasswordHint')) {
+    const hint = document.createElement('div');
+    hint.id = 'registerPasswordHint';
+    hint.className = 'register-hint';
+    hint.innerHTML = '<strong>密码要求</strong><span>至少 8 位，同时包含英文字母和数字。</span>';
+    passwordInput.closest('label')?.insertAdjacentElement('afterend', hint);
+  }
+  if (userTypeWrap && !document.querySelector('#registerUserTypeHint')) {
+    const hint = document.createElement('div');
+    hint.id = 'registerUserTypeHint';
+    hint.className = 'register-hint account-type-hint';
+    hint.innerHTML = `
+      <strong>账号类型说明</strong>
+      <span>个人用户：管理自己的知识库和问答。</span>
+      <span>企业用户：额外支持用户组、共享知识库和成员协作。</span>
+    `;
+    userTypeWrap.insertAdjacentElement('afterend', hint);
+  }
+}
+
+ensureRegisterHints();
+
 function saveCurrentUser(user) {
   currentUser = user;
   localStorage.setItem('feilangCurrentUserId', user.id);
@@ -258,9 +283,9 @@ refreshAdminUsersBtn.addEventListener('click', () => loadAdminUsers(true).catch(
 adminUsersList.addEventListener('click', async event => {
   const button = event.target.closest('[data-reset-password]');
   if (!button) return;
-  const newPassword = prompt('请输入新密码');
+  const newPassword = await appPrompt('请输入新密码', { type: 'password', title: '重置密码' });
   if (!newPassword) return;
-  const newPasswordConfirm = prompt('请再次输入新密码');
+  const newPasswordConfirm = await appPrompt('请再次输入新密码', { type: 'password', title: '确认新密码' });
   if (newPassword !== newPasswordConfirm) {
     alert('两次输入的新密码不一致');
     return;

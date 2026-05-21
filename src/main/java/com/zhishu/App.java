@@ -26,6 +26,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,7 +67,7 @@ public class App {
     initSqlite();
     TIKA.setMaxStringLength(-1);
     int port = Integer.parseInt(env("PORT", "3001"));
-    HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
+    HttpServer server = HttpServer.create(new InetSocketAddress("0.0.0.0", port), 0);
     server.createContext("/api/", App::apiSafe);
     server.createContext("/", App::staticSafe);
     server.setExecutor(Executors.newFixedThreadPool(Math.max(8, Runtime.getRuntime().availableProcessors() * 2)));
@@ -1262,7 +1263,7 @@ public class App {
   static boolean strongPassword(String password) { return password != null && password.length() >= 8 && password.matches(".*[A-Za-z].*") && password.matches(".*\\d.*"); }
   static boolean isEnterpriseUser(Map<String, Object> user) { return user != null && ("admin".equals(s(user.get("role"))) || "enterprise".equals(s(user.get("userType")))); }
   static String id(String prefix) { return prefix + "_" + System.currentTimeMillis() + "_" + Math.abs(ThreadLocalRandom.current().nextInt(100000)); }
-  static String now() { return LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME); }
+  static String now() { return LocalDateTime.now(ZoneId.of("Asia/Shanghai")).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME); }
   static String avatar(String id) { return AVATARS.contains(id) ? id : "wolf"; }
   static String ext(String name) { int i = name.lastIndexOf('.'); return i >= 0 ? name.substring(i).toLowerCase() : ""; }
   static String sourceKind(String name) { String e = ext(name); if (e.equals(".pdf")) return "pdf"; if (List.of(".xls", ".xlsx", ".csv").contains(e)) return "table"; if (List.of(".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff").contains(e)) return "image"; return "text"; }
