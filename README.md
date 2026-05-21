@@ -14,6 +14,26 @@
 http://localhost:3001
 ```
 
+## 项目演示
+
+![项目演示 1](docs/images/1.png)
+
+![项目演示 2](docs/images/2.png)
+
+![项目演示 3](docs/images/3.png)
+
+![项目演示 4](docs/images/4.png)
+
+![项目演示 5](docs/images/5.png)
+
+![项目演示 6](docs/images/6.png)
+
+![项目演示 7](docs/images/7.png)
+
+![项目演示 8](docs/images/8.png)
+
+![项目演示 9](docs/images/9.png)
+
 ## 当前关键能力
 
 - SQLite 持久化：主数据保存到 `data/app.db`，同时保留 `data/db.json` 作为可读备份。
